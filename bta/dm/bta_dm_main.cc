@@ -59,8 +59,10 @@ enum {
   BTA_DM_SEARCH_CANCEL_TRANSAC_CMPL, /* 15 bta_dm_search_cancel_transac_cmpl */
   BTA_DM_DISC_RMT_NAME,              /* 16 bta_dm_disc_rmt_name */
   BTA_DM_API_DI_DISCOVER,            /* 17 bta_dm_di_disc */
-  BTA_DM_CLOSE_GATT_CONN,            /* 18 bta_dm_close_gatt_conn */
-  BTA_DM_SEARCH_NUM_ACTIONS          /* 19 */
+#if (LEGACY_BT == FALSE)
+  BTA_DM_CLOSE_GATT_CONN, /* 18 bta_dm_close_gatt_conn */
+#endif
+  BTA_DM_SEARCH_NUM_ACTIONS /* 19 */
 };
 
 /* action function list */
@@ -84,8 +86,12 @@ const tBTA_DM_ACTION bta_dm_search_action[] = {
     bta_dm_search_cancel_transac_cmpl, /* 15 BTA_DM_SEARCH_CANCEL_TRANSAC_CMPL
                                           */
     bta_dm_disc_rmt_name,              /* 16 BTA_DM_DISC_RMT_NAME */
-    bta_dm_di_disc,                    /* 17 BTA_DM_API_DI_DISCOVER */
-    bta_dm_close_gatt_conn};
+    bta_dm_di_disc                     /* 17 BTA_DM_API_DI_DISCOVER */
+#if (LEGACY_BT == FALSE)
+    ,
+    bta_dm_close_gatt_conn
+#endif
+};
 
 #define BTA_DM_SEARCH_IGNORE BTA_DM_SEARCH_NUM_ACTIONS
 /* state table information */
@@ -115,9 +121,13 @@ const uint8_t bta_dm_search_idle_st_table[][BTA_DM_SEARCH_NUM_COLS] = {
     /* DISCV_RES_EVT */ {BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IGNORE,
                          BTA_DM_SEARCH_IDLE},
     /* API_DI_DISCOVER_EVT */ {BTA_DM_API_DI_DISCOVER, BTA_DM_SEARCH_IGNORE,
-                               BTA_DM_SEARCH_ACTIVE},
+                               BTA_DM_SEARCH_ACTIVE}
+#if (LEGACY_BT == FALSE)
+    ,
     /* DISC_CLOSE_TOUT_EVT */
-    {BTA_DM_CLOSE_GATT_CONN, BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IDLE}};
+    {BTA_DM_CLOSE_GATT_CONN, BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IDLE}
+#endif
+};
 const uint8_t bta_dm_search_search_active_st_table[][BTA_DM_SEARCH_NUM_COLS] = {
 
     /* Event                        Action 1
@@ -139,9 +149,12 @@ const uint8_t bta_dm_search_search_active_st_table[][BTA_DM_SEARCH_NUM_COLS] = {
     /* DISCV_RES_EVT */ {BTA_DM_SEARCH_RESULT, BTA_DM_SEARCH_IGNORE,
                          BTA_DM_SEARCH_ACTIVE},
     /* API_DI_DISCOVER_EVT */ {BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IGNORE,
-                               BTA_DM_SEARCH_ACTIVE},
+                               BTA_DM_SEARCH_ACTIVE}
+#if (LEGACY_BT == FALSE)
+    ,
     /* DISC_CLOSE_TOUT_EVT */
     {BTA_DM_CLOSE_GATT_CONN, BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_ACTIVE}
+#endif
 
 };
 
@@ -168,9 +181,14 @@ const uint8_t
         /* DISCV_RES_EVT */ {BTA_DM_SEARCH_CANCEL_TRANSAC_CMPL,
                              BTA_DM_SEARCH_CANCEL_CMPL, BTA_DM_SEARCH_IDLE},
         /* API_DI_DISCOVER_EVT */ {BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IGNORE,
-                                   BTA_DM_SEARCH_CANCELLING},
+                                   BTA_DM_SEARCH_CANCELLING}
+#if (LEGACY_BT == FALSE)
+        ,
         /* DISC_CLOSE_TOUT_EVT */
-        {BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_CANCELLING}};
+        {BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_CANCELLING}
+#endif
+
+};
 
 const uint8_t bta_dm_search_disc_active_st_table[][BTA_DM_SEARCH_NUM_COLS] = {
 
@@ -193,9 +211,13 @@ const uint8_t bta_dm_search_disc_active_st_table[][BTA_DM_SEARCH_NUM_COLS] = {
     /* DISCV_RES_EVT */ {BTA_DM_DISC_RESULT, BTA_DM_SEARCH_IGNORE,
                          BTA_DM_DISCOVER_ACTIVE},
     /* API_DI_DISCOVER_EVT */ {BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IGNORE,
-                               BTA_DM_DISCOVER_ACTIVE},
+                               BTA_DM_DISCOVER_ACTIVE}
+#if (LEGACY_BT == FALSE)
+    ,
     /* DISC_CLOSE_TOUT_EVT */
-    {BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IGNORE, BTA_DM_DISCOVER_ACTIVE}};
+    {BTA_DM_SEARCH_IGNORE, BTA_DM_SEARCH_IGNORE, BTA_DM_DISCOVER_ACTIVE}
+#endif
+};
 
 typedef const uint8_t (*tBTA_DM_ST_TBL)[BTA_DM_SEARCH_NUM_COLS];
 

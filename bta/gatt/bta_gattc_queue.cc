@@ -81,6 +81,7 @@ void BtaGattQueue::gatt_write_op_finished(uint16_t conn_id, tGATT_STATUS status,
 }
 
 void BtaGattQueue::gatt_execute_next_op(uint16_t conn_id) {
+#if (LEGACY_BT == FALSE)
   APPL_TRACE_DEBUG("%s:", __func__, conn_id);
   if (gatt_op_queue.empty()) {
     APPL_TRACE_DEBUG("%s: op queue is empty", __func__);
@@ -140,6 +141,7 @@ void BtaGattQueue::gatt_execute_next_op(uint16_t conn_id) {
   }
 
   gatt_ops.pop_front();
+#endif
 }
 
 void BtaGattQueue::Clean(uint16_t conn_id) {

@@ -26,6 +26,8 @@
 
 #include "bt_target.h"
 
+#if (LEGACY_BT == FALSE)
+
 #include <base/logging.h>
 #include <string.h>
 
@@ -655,3 +657,5 @@ tBTA_GATTC_CLCB* bta_gattc_find_int_disconn_clcb(tBTA_GATTC_DATA* p_msg) {
   }
   return p_clcb;
 }
+
+#endif /* LEGACY_BT */

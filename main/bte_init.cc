@@ -52,8 +52,10 @@
 #include "mca_api.h"
 #endif
 
+#if (LEGACY_BT == FALSE)
 #include "gatt_api.h"
 #include "smp_api.h"
+#endif
 
 /*****************************************************************************
  *                          F U N C T I O N S                                *

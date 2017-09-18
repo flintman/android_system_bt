@@ -26,7 +26,7 @@
 #include "gap_api.h"
 #include "gatt_api.h"
 #include "osi/include/properties.h"
-
+#if (LEGACY_BT == FALSE)
 #include <base/bind.h>
 #include <base/logging.h>
 #include <base/strings/string_number_conversions.h>
@@ -333,7 +333,6 @@ class HearingAidImpl : public HearingAid {
         min_ce_len = MIN_CE_LEN_10MS_CI;
         connection_interval = CONNECTION_INTERVAL_10MS_PARAM;
     }
-
     L2CA_UpdateBleConnParams(address, connection_interval, connection_interval,
                              0x000A, 0x0064 /*1s*/, min_ce_len, min_ce_len);
     return connection_interval;
@@ -378,7 +377,6 @@ class HearingAidImpl : public HearingAid {
       BTA_GATTC_Open(gatt_if, address, false, GATT_TRANSPORT_LE, false);
       BTA_DmBleStartAutoConn();
     }
-
     callbacks->OnDeviceAvailable(capabilities, hiSyncId, address);
   }
 
@@ -789,8 +787,8 @@ class HearingAidImpl : public HearingAid {
       LOG(INFO) << "Device not connected to profile" << address;
       return;
     }
-
     if (hearingDevice->first_connection) {
+
       /* add device into BG connection to accept remote initiated connection */
       BTA_GATTC_Open(gatt_if, address, false, GATT_TRANSPORT_LE, false);
       BTA_DmBleStartAutoConn();
@@ -803,7 +801,6 @@ class HearingAidImpl : public HearingAid {
 
       hearingDevice->first_connection = false;
     }
-
     ChooseCodec(*hearingDevice);
 
     SendStart(hearingDevice);
@@ -1451,3 +1448,4 @@ void HearingAid::DebugDump(int fd) {
   if (instance) instance->Dump(fd);
   HearingAidAudioSource::DebugDump(fd);
 }
+#endif

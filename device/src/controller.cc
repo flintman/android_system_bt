@@ -31,10 +31,14 @@
 #include "osi/include/future.h"
 #include "stack/include/btm_ble_api.h"
 
+#if (LEGACY_BT == FALSE)
 const bt_event_mask_t BLE_EVENT_MASK = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1E, 0x7f}};
 
 const bt_event_mask_t CLASSIC_EVENT_MASK = {HCI_DUMO_EVENT_MASK_EXT};
+#else
+const bt_event_mask_t CLASSIC_EVENT_MASK = {HCI_LISBON_EVENT_MASK_EXT};
+#endif
 
 // TODO(zachoverflow): factor out into common module
 const uint8_t SCO_HOST_BUFFER_SIZE = 0xff;
@@ -67,9 +71,11 @@ static uint8_t ble_supported_states[BLE_SUPPORTED_STATES_SIZE];
 static bt_device_features_t features_ble;
 static uint16_t ble_suggested_default_data_length;
 static uint16_t ble_supported_max_tx_octets;
+#if (LEGACY_BT == FALSE)
 static uint16_t ble_supported_max_tx_time;
 static uint16_t ble_supported_max_rx_octets;
 static uint16_t ble_supported_max_rx_time;
+#endif
 
 static uint16_t ble_maxium_advertising_data_length;
 static uint8_t ble_number_of_supported_advertising_sets;
@@ -148,6 +154,7 @@ static future_t* start_up(void) {
     packet_parser->parse_generic_command_complete(response);
   }
 
+#if (LEGACY_BT == FALSE)
   if (HCI_LE_SPT_SUPPORTED(features_classic[0].as_array)) {
     uint8_t simultaneous_le_host =
         HCI_SIMUL_LE_BREDR_SUPPORTED(features_classic[0].as_array)
@@ -162,6 +169,7 @@ static future_t* start_up(void) {
     if (last_features_classic_page_index < 1)
       last_features_classic_page_index = 1;
   }
+#endif
 
   // Done telling the controller about what page 0 features we support
   // Request the remaining feature pages
@@ -175,10 +183,13 @@ static future_t* start_up(void) {
 
     page_number++;
   }
-
+#if (LEGACY_BT == FALSE)
   // read BLE offload features support from controller
   response = AWAIT_COMMAND(packet_factory->make_ble_read_offload_features_support());
   packet_parser->parse_ble_read_offload_features_response(response, &ble_offload_features_supported);
+#else
+  ble_offload_features_supported = false;
+#endif
 #if (SC_MODE_INCLUDED == TRUE)
   if(ble_offload_features_supported) {
     secure_connections_supported =
@@ -192,6 +203,7 @@ static future_t* start_up(void) {
   }
 #endif
 
+#if (LEGACY_BT == FALSE)
   ble_supported = last_features_classic_page_index >= 1 &&
                   HCI_LE_HOST_SUPPORTED(features_classic[1].as_array);
   if (ble_supported) {
@@ -259,6 +271,7 @@ static future_t* start_up(void) {
         AWAIT_COMMAND(packet_factory->make_ble_set_event_mask(&BLE_EVENT_MASK));
     packet_parser->parse_generic_command_complete(response);
   }
+#endif
 
   if (simple_pairing_supported) {
     response =
@@ -527,7 +540,13 @@ static void set_ble_resolving_list_max_size(int resolving_list_max_size) {
 }
 
 static uint8_t get_le_all_initiating_phys() {
-  uint8_t phy = PHY_LE_1M;
+  uint8_t phy =
+#if (LEGACY_BT == FALSE)
+		  PHY_LE_1M;
+#else
+		  0x00;
+#endif
+
   // TODO(jpawlowski): uncomment after next FW udpate
   // if (supports_ble_2m_phy()) phy |= PHY_LE_2M;
   // if (supports_ble_coded_phy()) phy |= PHY_LE_CODED;

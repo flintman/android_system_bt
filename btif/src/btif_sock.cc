@@ -221,8 +221,9 @@ static void btsock_request_max_tx_data_length(const RawAddress& remote_device) {
   uint16_t max_len = controller->get_ble_maximum_tx_data_length();
 
   DVLOG(2) << __func__ << ": max_len=" << max_len;
-
+#if (LEGACY_BT == FALSE)
   BTA_DmBleSetDataLength(remote_device, max_len);
+#endif
 }
 
 static void btsock_signaled(int fd, int type, int flags, uint32_t user_id) {

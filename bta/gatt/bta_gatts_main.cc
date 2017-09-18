@@ -24,6 +24,8 @@
 
 #include "bt_target.h"
 
+#if (LEGACY_BT == FALSE)
+
 #include <string.h>
 
 #include "bt_common.h"
@@ -112,3 +114,5 @@ bool bta_gatts_hdl_event(BT_HDR* p_msg) {
 
   return (true);
 }
+
+#endif /* LEGACY_BT */

@@ -220,6 +220,7 @@ void btif_storage_remove_hearing_aid_white_list(const RawAddress& address);
  ******************************************************************************/
 bool btif_storage_is_restricted_device(const RawAddress* remote_bd_addr);
 
+#if (LEGACY_BT == FALSE)
 bt_status_t btif_storage_add_ble_bonding_key(RawAddress* remote_bd_addr,
                                              const uint8_t* key,
                                              uint8_t key_type,
@@ -242,7 +243,7 @@ bt_status_t btif_storage_get_remote_addr_type(const RawAddress* remote_bd_addr,
 
 bt_status_t btif_storage_set_remote_addr_type(const RawAddress* remote_bd_addr,
                                               uint8_t addr_type);
-
+#endif
 /*******************************************************************************
  * Function         btif_storage_load_hidd
  *
@@ -283,6 +284,7 @@ bt_status_t btif_storage_remove_hidd(RawAddress* remote_bd_addr);
 // Note: |name| should point to a buffer that can store string of length
 // |BTM_MAX_REM_BD_NAME_LEN|.
 bool btif_storage_get_stored_remote_name(const RawAddress& bd_addr, char* name);
+
 
 /******************************************************************************
  * Exported for unit tests

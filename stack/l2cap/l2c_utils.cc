@@ -87,6 +87,7 @@ tL2C_LCB* l2cu_allocate_lcb(const RawAddress& p_bd_addr, bool is_bonding,
       p_lcb->id = 1; /* spec does not allow '0' */
       p_lcb->is_bonding = is_bonding;
       p_lcb->transport = transport;
+#if (LEGACY_BT == FALSE)
       p_lcb->tx_data_len =
           controller_get_interface()->get_ble_default_data_packet_length();
       p_lcb->le_sec_pending_q = fixed_queue_new(SIZE_MAX);
@@ -94,7 +95,9 @@ tL2C_LCB* l2cu_allocate_lcb(const RawAddress& p_bd_addr, bool is_bonding,
       if (transport == BT_TRANSPORT_LE) {
         l2cb.num_ble_links_active++;
         l2c_ble_link_adjust_allocation();
-      } else {
+      } else
+#endif
+      {
         l2cb.num_links_active++;
         l2c_link_adjust_allocation();
       }
@@ -153,17 +156,22 @@ void l2cu_release_lcb(tL2C_LCB* p_lcb) {
   osi_free_and_reset((void**)&p_lcb->p_hcit_rcv_acl);
 
 #if (BTM_SCO_INCLUDED == TRUE)
+#if (LEGACY_BT == FALSE)
   if (p_lcb->transport == BT_TRANSPORT_BR_EDR) /* Release all SCO links */
+#endif
     btm_remove_sco_links(p_lcb->remote_bd_addr);
 #endif
 
   if (p_lcb->sent_not_acked > 0) {
+#if (LEGACY_BT == FALSE)
     if (p_lcb->transport == BT_TRANSPORT_LE) {
       l2cb.controller_le_xmit_window += p_lcb->sent_not_acked;
       if (l2cb.controller_le_xmit_window > l2cb.num_lm_ble_bufs) {
         l2cb.controller_le_xmit_window = l2cb.num_lm_ble_bufs;
       }
-    } else {
+    } else
+#endif
+    {
       l2cb.controller_xmit_window += p_lcb->sent_not_acked;
       if (l2cb.controller_xmit_window > l2cb.num_lm_acl_bufs) {
         l2cb.controller_xmit_window = l2cb.num_lm_acl_bufs;
@@ -171,10 +179,12 @@ void l2cu_release_lcb(tL2C_LCB* p_lcb) {
     }
   }
 
+#if (LEGACY_BT == FALSE)
   // Reset BLE connecting flag only if the address matches
   if (p_lcb->transport == BT_TRANSPORT_LE &&
       l2cb.ble_connecting_bda == p_lcb->remote_bd_addr)
     l2cb.is_ble_connecting = false;
+#endif
 
 #if (L2CAP_NUM_FIXED_CHNLS > 0)
   l2cu_process_fixed_disc_cback(p_lcb);
@@ -189,7 +199,11 @@ void l2cu_release_lcb(tL2C_LCB* p_lcb) {
   /* Tell BTM Acl management the link was removed */
   if ((p_lcb->link_state == LST_CONNECTED) ||
       (p_lcb->link_state == LST_DISCONNECTING))
-    btm_acl_removed(p_lcb->remote_bd_addr, p_lcb->transport);
+#if (LEGACY_BT == FALSE)
+        btm_acl_removed (p_lcb->remote_bd_addr, p_lcb->transport);
+#else
+        btm_acl_removed (p_lcb->remote_bd_addr, BT_TRANSPORT_BR_EDR);
+#endif
 
   /* Release any held buffers */
   if (p_lcb->link_xmit_data_q) {
@@ -202,14 +216,16 @@ void l2cu_release_lcb(tL2C_LCB* p_lcb) {
     p_lcb->link_xmit_data_q = NULL;
   }
 
+#if (LEGACY_BT == FALSE)
   /* Re-adjust flow control windows make sure it does not go negative */
   if (p_lcb->transport == BT_TRANSPORT_LE) {
     if (l2cb.num_ble_links_active >= 1) l2cb.num_ble_links_active--;
 
     l2c_ble_link_adjust_allocation();
-  } else {
+  } else
+#endif
+  {
     if (l2cb.num_links_active >= 1) l2cb.num_links_active--;
-
     l2c_link_adjust_allocation();
   }
 
@@ -222,7 +238,7 @@ void l2cu_release_lcb(tL2C_LCB* p_lcb) {
 
     (*p_cb)(L2CAP_PING_RESULT_NO_LINK);
   }
-
+#if (LEGACY_BT == FALSE)
   /* Check and release all the LE COC connections waiting for security */
   if (p_lcb->le_sec_pending_q) {
     while (!fixed_queue_is_empty(p_lcb->le_sec_pending_q)) {
@@ -236,6 +252,7 @@ void l2cu_release_lcb(tL2C_LCB* p_lcb) {
     fixed_queue_free(p_lcb->le_sec_pending_q, NULL);
     p_lcb->le_sec_pending_q = NULL;
   }
+#endif
 }
 
 /*******************************************************************************
@@ -254,7 +271,10 @@ tL2C_LCB* l2cu_find_lcb_by_bd_addr(const RawAddress& p_bd_addr,
   tL2C_LCB* p_lcb = &l2cb.lcb_pool[0];
 
   for (xx = 0; xx < MAX_L2CAP_LINKS; xx++, p_lcb++) {
-    if ((p_lcb->in_use) && p_lcb->transport == transport &&
+    if ((p_lcb->in_use) &&
+#if (LEGACY_BT == FALSE)
+    		p_lcb->transport == transport &&
+#endif
         (p_lcb->remote_bd_addr == p_bd_addr)) {
       return (p_lcb);
     }
@@ -329,12 +349,14 @@ BT_HDR* l2cu_build_header(tL2C_LCB* p_lcb, uint16_t len, uint8_t cmd,
   p_buf->len =
       len + HCI_DATA_PREAMBLE_SIZE + L2CAP_PKT_OVERHEAD + L2CAP_CMD_OVERHEAD;
   p = (uint8_t*)(p_buf + 1) + L2CAP_SEND_CMD_OFFSET;
-
+#if (LEGACY_BT == FALSE)
   /* Put in HCI header - handle + pkt boundary */
   if (p_lcb->transport == BT_TRANSPORT_LE) {
     UINT16_TO_STREAM(p, (p_lcb->handle | (L2CAP_PKT_START_NON_FLUSHABLE
                                           << L2CAP_PKT_TYPE_SHIFT)));
-  } else {
+  } else
+#endif
+  {
 #if (L2CAP_NON_FLUSHABLE_PB_INCLUDED == TRUE)
     UINT16_TO_STREAM(p, p_lcb->handle | l2cb.non_flushable_pbf);
 #else
@@ -345,10 +367,12 @@ BT_HDR* l2cu_build_header(tL2C_LCB* p_lcb, uint16_t len, uint8_t cmd,
 
   UINT16_TO_STREAM(p, len + L2CAP_PKT_OVERHEAD + L2CAP_CMD_OVERHEAD);
   UINT16_TO_STREAM(p, len + L2CAP_CMD_OVERHEAD);
-
+#if (LEGACY_BT == FALSE)
   if (p_lcb->transport == BT_TRANSPORT_LE) {
     UINT16_TO_STREAM(p, L2CAP_BLE_SIGNALLING_CID);
-  } else {
+  } else
+#endif
+  {
     UINT16_TO_STREAM(p, L2CAP_SIGNALLING_CID);
   }
 
@@ -1112,10 +1136,13 @@ void l2cu_send_peer_info_rsp(tL2C_LCB* p_lcb, uint8_t remote_id,
 #endif
   {
     UINT16_TO_STREAM(p, L2CAP_INFO_RESP_RESULT_SUCCESS);
+#if (LEGACY_BT == FALSE)
     if (p_lcb->transport == BT_TRANSPORT_LE) {
       /* optional data are not added for now */
       UINT32_TO_STREAM(p, L2CAP_BLE_EXTFEA_MASK);
-    } else {
+    } else
+#endif
+    {
 #if (L2CAP_CONFORMANCE_TESTING == TRUE)
       UINT32_TO_STREAM(p, l2cb.test_info_resp);
 #else
@@ -1626,7 +1653,6 @@ void l2cu_release_ccb(tL2C_CCB* p_ccb) {
       if (p_lcb->transport == BT_TRANSPORT_LE &&
           p_ccb->local_cid == L2CAP_SMP_CID)
         return;
-
       l2cu_no_dynamic_ccbs(p_lcb);
     } else {
       /* Link is still active, adjust channel quotas. */
@@ -1697,6 +1723,7 @@ tL2C_RCB* l2cu_allocate_rcb(uint16_t psm) {
  *
  ******************************************************************************/
 tL2C_RCB* l2cu_allocate_ble_rcb(uint16_t psm) {
+#if (LEGACY_BT == FALSE)
   tL2C_RCB* p_rcb = &l2cb.ble_rcb_pool[0];
   uint16_t xx;
 
@@ -1707,7 +1734,7 @@ tL2C_RCB* l2cu_allocate_ble_rcb(uint16_t psm) {
       return (p_rcb);
     }
   }
-
+#endif
   /* If here, no free RCB found */
   return (NULL);
 }
@@ -1803,13 +1830,14 @@ tL2C_RCB* l2cu_find_rcb_by_psm(uint16_t psm) {
  *
  ******************************************************************************/
 tL2C_RCB* l2cu_find_ble_rcb_by_psm(uint16_t psm) {
+#if (LEGACY_BT == FALSE)
   tL2C_RCB* p_rcb = &l2cb.ble_rcb_pool[0];
   uint16_t xx;
 
   for (xx = 0; xx < BLE_MAX_L2CAP_CLIENTS; xx++, p_rcb++) {
     if ((p_rcb->in_use) && (p_rcb->psm == psm)) return (p_rcb);
   }
-
+#endif
   /* If here, no match found */
   return (NULL);
 }
@@ -2097,7 +2125,9 @@ void l2cu_device_reset(void) {
       l2c_link_hci_disc_comp(p_lcb->handle, (uint8_t)-1);
     }
   }
+#if (LEGACY_BT == FALSE)
   l2cb.is_ble_connecting = false;
+#endif
 }
 
 /*******************************************************************************
@@ -2122,6 +2152,7 @@ bool l2cu_create_conn(tL2C_LCB* p_lcb, tBT_TRANSPORT transport,
   bool is_sco_active;
 #endif
 
+#if (LEGACY_BT == FALSE)
   tBT_DEVICE_TYPE dev_type;
   tBLE_ADDR_TYPE addr_type;
 
@@ -2133,9 +2164,9 @@ bool l2cu_create_conn(tL2C_LCB* p_lcb, tBT_TRANSPORT transport,
     p_lcb->ble_addr_type = addr_type;
     p_lcb->transport = BT_TRANSPORT_LE;
     p_lcb->initiating_phys = initiating_phys;
-
     return (l2cble_create_conn(p_lcb));
-  }
+    }
+#endif
 
   /* If there is a connection where we perform as a slave, try to switch roles
      for this connection */
@@ -2661,6 +2692,7 @@ void l2cu_no_dynamic_ccbs(tL2C_LCB* p_lcb) {
  *
  ******************************************************************************/
 void l2cu_process_fixed_chnl_resp(tL2C_LCB* p_lcb) {
+#if (LEGACY_BT == FALSE)
   if (p_lcb->transport == BT_TRANSPORT_BR_EDR) {
     /* ignore all not assigned BR/EDR channels */
     p_lcb->peer_chnl_mask[0] &=
@@ -2668,27 +2700,41 @@ void l2cu_process_fixed_chnl_resp(tL2C_LCB* p_lcb) {
          L2CAP_FIXED_CHNL_SMP_BR_BIT);
   } else
     p_lcb->peer_chnl_mask[0] = l2cb.l2c_ble_fixed_chnls_mask;
+#endif
 
   /* Tell all registered fixed channels about the connection */
   for (int xx = 0; xx < L2CAP_NUM_FIXED_CHNLS; xx++) {
+#if (LEGACY_BT == FALSE)
     /* skip sending LE fix channel callbacks on BR/EDR links */
     if (p_lcb->transport == BT_TRANSPORT_BR_EDR &&
         xx + L2CAP_FIRST_FIXED_CHNL >= L2CAP_ATT_CID &&
         xx + L2CAP_FIRST_FIXED_CHNL <= L2CAP_SMP_CID)
       continue;
+#endif
     if (l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb != NULL) {
       if (p_lcb->peer_chnl_mask[(xx + L2CAP_FIRST_FIXED_CHNL) / 8] &
           (1 << ((xx + L2CAP_FIRST_FIXED_CHNL) % 8))) {
         if (p_lcb->p_fixed_ccbs[xx])
           p_lcb->p_fixed_ccbs[xx]->chnl_state = CST_OPEN;
+#if (LEGACY_BT == FALSE)
         (*l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb)(xx + L2CAP_FIRST_FIXED_CHNL,
                                                  p_lcb->remote_bd_addr, true, 0,
                                                  p_lcb->transport);
+#else
+        (*l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb)(xx + L2CAP_FIRST_FIXED_CHNL,
+                                                 p_lcb->remote_bd_addr, true, 0,
+                                                 BT_TRANSPORT_BR_EDR);
+#endif
       } else {
+#if (LEGACY_BT == FALSE)
         (*l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb)(
             xx + L2CAP_FIRST_FIXED_CHNL, p_lcb->remote_bd_addr, false,
             p_lcb->disc_reason, p_lcb->transport);
-
+#else
+        (*l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb)(
+            xx + L2CAP_FIRST_FIXED_CHNL, p_lcb->remote_bd_addr, false,
+            p_lcb->disc_reason, BT_TRANSPORT_BR_EDR);
+#endif
         if (p_lcb->p_fixed_ccbs[xx]) {
           l2cu_release_ccb(p_lcb->p_fixed_ccbs[xx]);
           p_lcb->p_fixed_ccbs[xx] = NULL;
@@ -2725,19 +2771,32 @@ void l2cu_process_fixed_disc_cback(tL2C_LCB* p_lcb) {
         p_l2c_chnl_ctrl_block = p_lcb->p_fixed_ccbs[xx];
         p_lcb->p_fixed_ccbs[xx] = NULL;
         l2cu_release_ccb(p_l2c_chnl_ctrl_block);
+#if (LEGACY_BT == FALSE)
         (*l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb)(
             xx + L2CAP_FIRST_FIXED_CHNL, p_lcb->remote_bd_addr, false,
             p_lcb->disc_reason, p_lcb->transport);
+#else
+        (*l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb)(
+            xx + L2CAP_FIRST_FIXED_CHNL, p_lcb->remote_bd_addr, false,
+            p_lcb->disc_reason, BT_TRANSPORT_BR_EDR);
+#endif
       }
     } else if ((peer_channel_mask & (1 << (xx + L2CAP_FIRST_FIXED_CHNL))) &&
                (l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb != NULL))
+#if (LEGACY_BT == FALSE)
       (*l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb)(
           xx + L2CAP_FIRST_FIXED_CHNL, p_lcb->remote_bd_addr, false,
           p_lcb->disc_reason, p_lcb->transport);
+#else
+    (*l2cb.fixed_reg[xx].pL2CA_FixedConn_Cb)(
+        xx + L2CAP_FIRST_FIXED_CHNL, p_lcb->remote_bd_addr, false,
+        p_lcb->disc_reason,BT_TRANSPORT_BR_EDR);
+#endif
   }
 #endif
 }
 
+#if (LEGACY_BT == FALSE)
 /*******************************************************************************
  *
  * Function         l2cu_send_peer_ble_par_req
@@ -3011,10 +3070,9 @@ void l2cu_send_peer_ble_credit_based_disconn_req(tL2C_CCB* p_ccb) {
 
   UINT16_TO_STREAM(p, p_ccb->remote_cid);
   UINT16_TO_STREAM(p, p_ccb->local_cid);
-
   l2c_link_check_send_pkts(p_lcb, NULL, p_buf);
 }
-
+#endif /* LEGACY_BT == FALSE */
 /*******************************************************************************
  * Functions used by both Full and Light Stack
  ******************************************************************************/
@@ -3350,6 +3408,7 @@ void l2cu_set_acl_hci_header(BT_HDR* p_buf, tL2C_CCB* p_ccb) {
    * header */
   p = (uint8_t*)(p_buf + 1) + p_buf->offset - HCI_DATA_PREAMBLE_SIZE;
 
+#if (LEGACY_BT == FALSE)
   if (p_ccb->p_lcb->transport == BT_TRANSPORT_LE) {
     UINT16_TO_STREAM(p, p_ccb->p_lcb->handle | (L2CAP_PKT_START_NON_FLUSHABLE
                                                 << L2CAP_PKT_TYPE_SHIFT));
@@ -3362,7 +3421,9 @@ void l2cu_set_acl_hci_header(BT_HDR* p_buf, tL2C_CCB* p_ccb) {
     } else {
       UINT16_TO_STREAM(p, p_buf->len);
     }
-  } else {
+  } else
+#endif
+  {
 #if (L2CAP_NON_FLUSHABLE_PB_INCLUDED == TRUE)
     if ((((p_buf->layer_specific & L2CAP_FLUSHABLE_MASK) ==
           L2CAP_FLUSHABLE_CH_BASED) &&

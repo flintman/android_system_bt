@@ -22,7 +22,7 @@
 #include "bta_hearing_aid_api.h"
 #include "btif_common.h"
 #include "btif_storage.h"
-
+#if (LEGACY_BT == FALSE)
 #include <base/bind.h>
 #include <base/location.h>
 #include <base/logging.h>
@@ -147,3 +147,4 @@ HearingAidInterface* btif_hearing_aid_get_interface() {
 
   return hearingAidInstance.get();
 }
+#endif

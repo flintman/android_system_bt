@@ -38,6 +38,8 @@
 #include "osi/include/osi.h"
 #include "stack_config.h"
 
+#if (LEGACY_BT == FALSE)
+
 using base::StringPrintf;
 
 static void l2cble_start_conn_update(tL2C_LCB* p_lcb);
@@ -1514,3 +1516,4 @@ void L2CA_AdjustConnectionIntervals(uint16_t* min_interval,
     *max_interval = phone_min_interval;
   }
 }
+#endif /* (LEGACY_BT == FALSE) */

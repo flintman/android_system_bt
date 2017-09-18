@@ -28,7 +28,9 @@
 #include "bt_target.h"
 #include "bta_sys.h"
 
+#if (LEGACY_BT == FALSE)
 #include "bta_gatt_api.h"
+#endif
 
 /*****************************************************************************
  *  Constants and data types
@@ -75,8 +77,10 @@ typedef struct {
   tBTA_SERVICE_MASK services;
   tBTA_DM_SEARCH_CBACK* p_cback;
   tBTA_DM_RS_RES rs_res;
+#if (LEGACY_BT == FALSE)
   uint8_t num_uuid;
   bluetooth::Uuid* p_uuid;
+#endif
 } tBTA_DM_API_SEARCH;
 
 /* data type for BTA_DM_API_DISCOVER_EVT */
@@ -87,8 +91,10 @@ typedef struct {
   tBTA_DM_SEARCH_CBACK* p_cback;
   bool sdp_search;
   tBTA_TRANSPORT transport;
+#if (LEGACY_BT == FALSE)
   uint8_t num_uuid;
   bluetooth::Uuid* p_uuid;
+#endif
   bluetooth::Uuid uuid;
 } tBTA_DM_API_DISCOVER;
 
@@ -228,8 +234,10 @@ typedef struct {
   tBTA_DM_PM_ACTION pm_mode_attempted;
   tBTA_DM_PM_ACTION pm_mode_failed;
   bool remove_dev_pending;
+#if (LEGACY_BT == FALSE)
   uint16_t conn_handle;
   tBT_TRANSPORT transport;
+#endif
 } tBTA_DM_PEER_DEVICE;
 
 /* structure to store list of
@@ -237,7 +245,9 @@ typedef struct {
 typedef struct {
   tBTA_DM_PEER_DEVICE peer_device[BTA_DM_NUM_PEER_DEVICE];
   uint8_t count;
+#if (LEGACY_BT == FALSE)
   uint8_t le_count;
+#endif
 } tBTA_DM_ACTIVE_LINK;
 
 typedef struct {
@@ -287,7 +297,9 @@ typedef struct {
   bool is_bta_dm_active;
   tBTA_DM_ACTIVE_LINK device_list;
   tBTA_DM_SEC_CBACK* p_sec_cback;
+#if (LEGACY_BT == FALSE)
   tBTA_BLE_ENERGY_INFO_CBACK* p_energy_info_cback;
+#endif
   uint16_t state;
   bool disabling;
   alarm_t* disable_timer;
@@ -358,6 +370,7 @@ typedef struct {
   bool sdp_search;
   bool cancel_pending; /* inquiry cancel is pending */
   tBTA_TRANSPORT transport;
+#if (LEGACY_BT == FALSE)
   tBTA_DM_SEARCH_CBACK* p_scan_cback;
   tGATT_IF client_if;
   uint8_t num_uuid;
@@ -370,7 +383,7 @@ typedef struct {
   uint32_t ble_raw_used;
   alarm_t* gatt_close_timer; /* GATT channel close delay timer */
   RawAddress pending_close_bda; /* pending GATT channel remote device address */
-
+#endif
 } tBTA_DM_SEARCH_CB;
 
 /* DI control block */
@@ -492,6 +505,7 @@ extern void bta_dm_pm_btm_status(const RawAddress&, tBTM_PM_STATUS, uint16_t,
 extern void bta_dm_pm_timer(const RawAddress&, tBTA_DM_PM_ACTION);
 extern void bta_dm_add_ampkey(tBTA_DM_MSG* p_data);
 
+#if (LEGACY_BT == FALSE)
 extern void bta_dm_add_blekey(const RawAddress& bd_addr,
                               tBTA_LE_KEY_VALUE blekey,
                               tBTA_LE_KEY_TYPE key_type);
@@ -518,6 +532,7 @@ extern void bta_dm_ble_set_data_length(const RawAddress&, uint16_t);
 
 extern void bta_dm_ble_get_energy_info(tBTA_BLE_ENERGY_INFO_CBACK*);
 
+#endif
 extern void bta_dm_set_encryption(const RawAddress&, tBTA_TRANSPORT,
                                   tBTA_DM_ENCRYPT_CBACK*, tBTA_DM_BLE_SEC_ACT);
 extern void bta_dm_confirm(const RawAddress&, bool);

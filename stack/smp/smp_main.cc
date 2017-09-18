@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #include "bt_target.h"
+#if (LEGACY_BT == FALSE)
 
 #include <cutils/log.h>
 #include <string.h>
@@ -1038,3 +1039,6 @@ const char* smp_get_event_name(tSMP_EVENT event) {
   }
   return p_str;
 }
+
+#endif
+

@@ -2148,12 +2148,10 @@ void bta_jv_l2cap_connect_le(uint16_t remote_chan,
   t->remote_addr = peer_bd_addr;
   id = t->id;
   t->init_called = false;
-
   if (L2CA_ConnectFixedChnl(t->chan, t->remote_addr)) {
     evt.l2c_cl_init.status = BTA_JV_SUCCESS;
     evt.l2c_cl_init.handle = id;
   }
-
   // it could have been deleted/moved from under us, so re-find it */
   t = fcclient_find_by_id(id);
   if (t) {

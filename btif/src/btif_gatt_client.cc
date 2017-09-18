@@ -38,6 +38,8 @@
 #include "btif_common.h"
 #include "btif_util.h"
 
+#if (LEGACY_BT == FALSE)
+
 #include <hardware/bt_gatt.h>
 
 #include "bta_api.h"
@@ -615,3 +617,5 @@ const btgatt_client_interface_t btgattClientInterface = {
     btif_gattc_read_phy,
     btif_gattc_test_command,
     btif_gattc_get_gatt_db};
+
+#endif

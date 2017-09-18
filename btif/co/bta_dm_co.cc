@@ -28,9 +28,13 @@
 #include "osi/include/osi.h"
 
 tBTE_APPL_CFG bte_appl_cfg = {
+#if (LEGACY_BT == FALSE)
     BTA_LE_AUTH_REQ_SC_MITM_BOND,  // Authentication requirements
     BTM_LOCAL_IO_CAPS_BLE, BTM_BLE_INITIATOR_KEY_SIZE,
-    BTM_BLE_RESPONDER_KEY_SIZE, BTM_BLE_MAX_KEY_SIZE};
+    BTM_BLE_RESPONDER_KEY_SIZE, BTM_BLE_MAX_KEY_SIZE
+#endif
+};
+
 
 /*******************************************************************************
  *
@@ -165,6 +169,7 @@ void bta_dm_co_rmt_oob(const RawAddress& bd_addr) {
   bta_dm_ci_rmt_oob(result, bd_addr, p_c, p_r);
 }
 
+#if (LEGACY_BT == FALSE)
 /*******************************************************************************
  *
  * Function         bta_dm_co_le_io_key_req
@@ -274,3 +279,5 @@ void bta_dm_co_ble_io_req(const RawAddress& bd_addr, tBTA_IO_CAP* p_io_cap,
   if (bte_appl_cfg.ble_max_key_size > 7 && bte_appl_cfg.ble_max_key_size <= 16)
     *p_max_key_size = bte_appl_cfg.ble_max_key_size;
 }
+
+#endif

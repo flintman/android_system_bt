@@ -28,7 +28,6 @@
 #include <limits.h>
 #include <string.h>
 #include <algorithm>
-
 #include "audio_a2dp_hw/include/audio_a2dp_hw.h"
 #include "bt_common.h"
 #include "bta_av_ci.h"
@@ -39,6 +38,7 @@
 #include "btif_av.h"
 #include "btif_av_co.h"
 #include "btif_util.h"
+#include "osi/include/alarm.h"
 #include "osi/include/fixed_queue.h"
 #include "osi/include/log.h"
 #include "osi/include/metrics.h"
