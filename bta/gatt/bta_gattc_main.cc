@@ -24,6 +24,8 @@
 
 #include "bt_target.h"
 
+#if (LEGACY_BT == FALSE)
+
 #include <string.h>
 
 #include "bt_common.h"
@@ -479,3 +481,4 @@ static const char* gattc_state_code(tBTA_GATTC_STATE state_code) {
 }
 
 #endif /* Debug Functions */
+#endif /* LEGACY_BT */

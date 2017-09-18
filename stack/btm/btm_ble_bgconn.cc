@@ -40,6 +40,8 @@
 #define BTM_BLE_SCAN_PARAM_TOUT 50 /* 50 seconds */
 #endif
 
+#if (LEGACY_BT == FALSE)
+
 static void btm_suspend_wl_activity(tBTM_BLE_WL_STATE wl_state);
 static void btm_resume_wl_activity(tBTM_BLE_WL_STATE wl_state);
 
@@ -647,3 +649,5 @@ bool btm_send_pending_direct_conn(void) {
 
   return rt;
 }
+
+#endif

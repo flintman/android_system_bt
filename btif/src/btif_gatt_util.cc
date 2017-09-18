@@ -40,6 +40,8 @@
 #include "btif_util.h"
 #include "osi/include/osi.h"
 
+#if (LEGACY_BT == FALSE)
+
 using bluetooth::Uuid;
 
 /*******************************************************************************
@@ -89,6 +91,8 @@ void btif_gatt_check_encrypted_link(UNUSED_ATTR RawAddress bd_addr,
                                     UNUSED_ATTR tGATT_TRANSPORT
                                         transport_link) {}
 #endif
+
+#endif  // LEGACY_BT
 
 void btif_gatt_move_track_adv_data(btgatt_track_adv_info_t* p_dest,
                                    btgatt_track_adv_info_t* p_src) {

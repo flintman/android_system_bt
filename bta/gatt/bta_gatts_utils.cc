@@ -24,6 +24,8 @@
 
 #include "bt_target.h"
 
+#if (LEGACY_BT == FALSE)
+
 #include <string.h>
 
 #include "bt_common.h"
@@ -145,3 +147,5 @@ tBTA_GATTS_SRVC_CB* bta_gatts_find_srvc_cb_by_attr_id(tBTA_GATTS_CB* p_cb,
   }
   return NULL;
 }
+
+#endif

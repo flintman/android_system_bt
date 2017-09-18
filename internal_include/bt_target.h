@@ -650,6 +650,7 @@
  * ATT/GATT Protocol/Profile Settings
  *
  *****************************************************************************/
+
 #ifndef BLE_LLT_INCLUDED
 #define BLE_LLT_INCLUDED TRUE
 #endif
@@ -682,6 +683,7 @@
  * SMP
  *
  *****************************************************************************/
+
 #ifndef SMP_DEBUG
 #define SMP_DEBUG FALSE
 #endif
@@ -1389,6 +1391,33 @@ single PDU.
 #ifndef BTSNOOP_MEM
 #define BTSNOOP_MEM TRUE
 #endif
+
+/*
+ * Set if you have an older device without BLE and other advanced features
+ */
+#ifndef LEGACY_BT
+#define LEGACY_BT FALSE
+#endif
+
+#if (LEGACY_BT == TRUE)
+
+#ifdef BTA_HH_LE_INCLUDED
+#undef BTA_HH_LE_INCLUDED
+#endif
+
+#ifdef BLE_PRIVACY_SPT
+#undef BLE_PRIVACY_SPT
+#endif
+
+#ifdef BTA_HOST_INTERLEAVE_SEARCH
+#undef BTA_HOST_INTERLEAVE_SEARCH
+#endif
+
+#define BLE_PRIVACY_SPT FALSE
+#define BTA_HH_LE_INCLUDED FALSE
+#define BTA_HOST_INTERLEAVE_SEARCH FALSE
+#endif /* LEGACY_BT */
+
 
 #include "bt_trace.h"
 

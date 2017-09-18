@@ -134,6 +134,7 @@ void l2c_rcv_acl_data(BT_HDR* p_msg) {
   /* Update the buffer header */
   p_msg->offset += 4;
 
+#if (LEGACY_BT == FALSE)
   /* for BLE channel, always notify connection when ACL data received on the
    * link */
   if (p_lcb && p_lcb->transport == BT_TRANSPORT_LE &&
@@ -142,6 +143,7 @@ void l2c_rcv_acl_data(BT_HDR* p_msg) {
      * not in disconnecting mode */
     l2cble_notify_le_connection(p_lcb->remote_bd_addr);
   }
+#endif
 
   /* Find the CCB for this CID */
   tL2C_CCB* p_ccb = NULL;
@@ -176,12 +178,13 @@ void l2c_rcv_acl_data(BT_HDR* p_msg) {
     osi_free(p_msg);
     return;
   }
-
+#if (LEGACY_BT == FALSE)
   if (rcv_cid == L2CAP_BLE_SIGNALLING_CID) {
     l2cble_process_sig_cmd(p_lcb, p, l2cap_len);
     osi_free(p_msg);
     return;
   }
+#endif
 
 #if (L2CAP_NUM_FIXED_CHNLS > 0)
   if ((rcv_cid >= L2CAP_FIRST_FIXED_CHNL) &&
@@ -256,10 +259,11 @@ void l2c_rcv_acl_data(BT_HDR* p_msg) {
  ******************************************************************************/
 static void process_l2cap_cmd(tL2C_LCB* p_lcb, uint8_t* p, uint16_t pkt_len) {
   tL2C_CONN_INFO con_info;
-
+#if (LEGACY_BT == FALSE)
   /* if l2cap command received in CID 1 on top of an LE link, ignore this
    * command */
   if (p_lcb->transport == BT_TRANSPORT_LE) return;
+#endif
 
   /* Reject the packet if it exceeds the default Signalling Channel MTU */
   bool pkt_size_rej = false;
@@ -843,9 +847,11 @@ void l2c_init(void) {
   l2cb.high_pri_min_xmit_quota = L2CAP_HIGH_PRI_MIN_XMIT_QUOTA;
 #endif
 
+#if (LEGACY_BT == FALSE)
   l2cb.l2c_ble_fixed_chnls_mask = L2CAP_FIXED_CHNL_ATT_BIT |
                                   L2CAP_FIXED_CHNL_BLE_SIG_BIT |
                                   L2CAP_FIXED_CHNL_SMP_BIT;
+#endif
 
   l2cb.rcv_pending_q = list_new(NULL);
   CHECK(l2cb.rcv_pending_q != NULL);

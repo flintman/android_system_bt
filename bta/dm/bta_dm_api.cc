@@ -202,8 +202,10 @@ void BTA_DmDiscoverUUID(const RawAddress& bd_addr, const Uuid& uuid,
   p_msg->p_cback = p_cback;
   p_msg->sdp_search = sdp_search;
 
+#if (LEGACY_BT == FALSE)
   p_msg->num_uuid = 0;
   p_msg->p_uuid = NULL;
+#endif
   p_msg->uuid = uuid;
 
   bta_sys_sendmsg(p_msg);
@@ -443,8 +445,10 @@ tBTA_STATUS BTA_DmSetLocalDiRecord(tBTA_DI_RECORD* p_device_info,
  ******************************************************************************/
 void BTA_DmAddBleKey(const RawAddress& bd_addr, tBTA_LE_KEY_VALUE* p_le_key,
                      tBTA_LE_KEY_TYPE key_type) {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(FROM_HERE,
                    base::Bind(bta_dm_add_blekey, bd_addr, *p_le_key, key_type));
+#endif
 }
 
 /*******************************************************************************
@@ -464,8 +468,10 @@ void BTA_DmAddBleKey(const RawAddress& bd_addr, tBTA_LE_KEY_VALUE* p_le_key,
  ******************************************************************************/
 void BTA_DmAddBleDevice(const RawAddress& bd_addr, tBLE_ADDR_TYPE addr_type,
                         tBT_DEVICE_TYPE dev_type) {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(FROM_HERE, base::Bind(bta_dm_add_ble_device, bd_addr,
                                          addr_type, dev_type));
+#endif
 }
 
 /*******************************************************************************
@@ -484,8 +490,10 @@ void BTA_DmAddBleDevice(const RawAddress& bd_addr, tBLE_ADDR_TYPE addr_type,
  ******************************************************************************/
 void BTA_DmBlePasskeyReply(const RawAddress& bd_addr, bool accept,
                            uint32_t passkey) {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(FROM_HERE, base::Bind(bta_dm_ble_passkey_reply, bd_addr,
                                          accept, accept ? passkey : 0));
+#endif
 }
 
 /*******************************************************************************
@@ -502,8 +510,10 @@ void BTA_DmBlePasskeyReply(const RawAddress& bd_addr, bool accept,
  *
  ******************************************************************************/
 void BTA_DmBleConfirmReply(const RawAddress& bd_addr, bool accept) {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(FROM_HERE,
                    base::Bind(bta_dm_ble_confirm_reply, bd_addr, accept));
+#endif
 }
 
 /*******************************************************************************
@@ -520,7 +530,9 @@ void BTA_DmBleConfirmReply(const RawAddress& bd_addr, bool accept) {
  ******************************************************************************/
 void BTA_DmBleSecurityGrant(const RawAddress& bd_addr,
                             tBTA_DM_BLE_SEC_GRANT res) {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(FROM_HERE, base::Bind(BTM_SecurityGrant, bd_addr, res));
+#endif
 }
 
 /*******************************************************************************
@@ -546,9 +558,11 @@ void BTA_DmSetBlePrefConnParams(const RawAddress& bd_addr,
                                 uint16_t min_conn_int, uint16_t max_conn_int,
                                 uint16_t slave_latency,
                                 uint16_t supervision_tout) {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(FROM_HERE,
                    base::Bind(bta_dm_ble_set_conn_params, bd_addr, min_conn_int,
                               max_conn_int, slave_latency, supervision_tout));
+#endif
 }
 
 /*******************************************************************************
@@ -565,13 +579,17 @@ void BTA_DmSetBlePrefConnParams(const RawAddress& bd_addr,
  *
  ******************************************************************************/
 void BTA_DmSetBleConnScanParams(uint32_t scan_interval, uint32_t scan_window) {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(FROM_HERE, base::Bind(bta_dm_ble_set_conn_scan_params,
                                          scan_interval, scan_window));
+#endif
 }
 
 /** Set BLE connectable mode to auto connect */
 void BTA_DmBleStartAutoConn() {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(FROM_HERE, base::Bind(BTM_BleStartAutoConn));
+#endif  // LEGACY_BT == FALSE
 }
 
 /*******************************************************************************
@@ -583,6 +601,7 @@ void BTA_DmBleStartAutoConn() {
  * Returns          void
  *
  ******************************************************************************/
+#if (LEGACY_BT == FALSE)
 static void bta_dm_discover_send_msg(const RawAddress& bd_addr,
                                      tBTA_SERVICE_MASK_EXT* p_services,
                                      tBTA_DM_SEARCH_CBACK* p_cback,
@@ -612,6 +631,7 @@ static void bta_dm_discover_send_msg(const RawAddress& bd_addr,
 
   bta_sys_sendmsg(p_msg);
 }
+#endif
 
 /*******************************************************************************
  *
@@ -633,7 +653,9 @@ void BTA_DmDiscoverByTransport(const RawAddress& bd_addr,
                                tBTA_SERVICE_MASK_EXT* p_services,
                                tBTA_DM_SEARCH_CBACK* p_cback, bool sdp_search,
                                tBTA_TRANSPORT transport) {
+#if (LEGACY_BT == FALSE)
   bta_dm_discover_send_msg(bd_addr, p_services, p_cback, sdp_search, transport);
+#endif
 }
 
 /*******************************************************************************
@@ -654,8 +676,10 @@ void BTA_DmDiscoverByTransport(const RawAddress& bd_addr,
 void BTA_DmDiscoverExt(const RawAddress& bd_addr,
                        tBTA_SERVICE_MASK_EXT* p_services,
                        tBTA_DM_SEARCH_CBACK* p_cback, bool sdp_search) {
+#if (LEGACY_BT == FALSE)
   bta_dm_discover_send_msg(bd_addr, p_services, p_cback, sdp_search,
                            BTA_TRANSPORT_UNKNOWN);
+#endif
 }
 
 /*******************************************************************************
@@ -678,6 +702,7 @@ void BTA_DmDiscoverExt(const RawAddress& bd_addr,
  * Returns          void
  *
  ******************************************************************************/
+#if (LEGACY_BT == FALSE)
 void BTA_DmSearchExt(tBTA_DM_INQ* p_dm_inq, tBTA_SERVICE_MASK_EXT* p_services,
                      tBTA_DM_SEARCH_CBACK* p_cback) {
   const size_t len =
@@ -706,7 +731,11 @@ void BTA_DmSearchExt(tBTA_DM_INQ* p_dm_inq, tBTA_SERVICE_MASK_EXT* p_services,
 
   bta_sys_sendmsg(p_msg);
 }
-
+#else
+void BTA_DmSearchExt(UNUSED_ATTR tBTA_DM_INQ* p_dm_inq,
+                     UNUSED_ATTR tBTA_SERVICE_MASK_EXT* p_services,
+                     UNUSED_ATTR tBTA_DM_SEARCH_CBACK* p_cback) {}
+#endif
 /*******************************************************************************
  *
  * Function         BTA_DmBleUpdateConnectionParam
@@ -729,9 +758,11 @@ void BTA_DmBleUpdateConnectionParams(const RawAddress& bd_addr,
                                      uint16_t min_int, uint16_t max_int,
                                      uint16_t latency, uint16_t timeout,
                                      uint16_t min_ce_len, uint16_t max_ce_len) {
+#if (LEGACY_BT == FALSE)
   do_in_bta_thread(
       FROM_HERE, base::Bind(bta_dm_ble_update_conn_params, bd_addr, min_int,
                             max_int, latency, timeout, min_ce_len, max_ce_len));
+#endif
 }
 
 /*******************************************************************************
@@ -754,6 +785,7 @@ void BTA_DmBleConfigLocalPrivacy(bool privacy_enable) {
 #endif
 }
 
+#if (LEGACY_BT == FALSE)
 /*******************************************************************************
  *
  * Function         BTA_DmBleGetEnergyInfo
@@ -776,6 +808,8 @@ void BTA_DmBleSetDataLength(const RawAddress& remote_device,
   do_in_bta_thread(FROM_HERE, base::Bind(bta_dm_ble_set_data_length,
                                          remote_device, tx_data_length));
 }
+
+#endif
 
 /*******************************************************************************
  *
@@ -826,6 +860,7 @@ void BTA_DmCloseACL(const RawAddress& bd_addr, bool remove_dev,
       FROM_HERE, base::Bind(bta_dm_close_acl, bd_addr, remove_dev, transport));
 }
 
+#if (LEGACY_BT == FALSE)
 /*******************************************************************************
  *
  * Function         BTA_DmBleObserve
@@ -884,3 +919,5 @@ void BTA_VendorCleanup(void) {
 
   if (cmn_ble_vsc_cb.adv_inst_max > 0) btm_ble_multi_adv_cleanup();
 }
+
+#endif

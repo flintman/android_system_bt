@@ -25,6 +25,8 @@
 #include "bt_target.h"
 
 #include <base/bind.h>
+#if (LEGACY_BT == FALSE)
+
 #include <string.h>
 
 #include "bt_common.h"
@@ -355,3 +357,5 @@ void BTA_GATTS_Close(uint16_t conn_id) {
 
   bta_sys_sendmsg(p_buf);
 }
+
+#endif /* LEGACY_BT */

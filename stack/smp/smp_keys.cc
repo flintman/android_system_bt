@@ -23,6 +23,7 @@
  ******************************************************************************/
 #include "bt_target.h"
 
+#if (LEGACY_BT == FALSE)
 #if (SMP_DEBUG == TRUE)
 #include <stdio.h>
 #endif
@@ -1950,3 +1951,6 @@ void smp_start_nonce_generation(tSMP_CB* p_cb) {
       },
       p_cb));
 }
+
+#endif
+

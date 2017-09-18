@@ -16,6 +16,7 @@
  *
  ******************************************************************************/
 
+#if (LEGACY_BT == FALSE)
 #include <base/logging.h>
 #include <base/strings/stringprintf.h>
 #include <string.h>
@@ -578,3 +579,5 @@ bool GAP_BleCancelReadPeerDevName(const RawAddress& peer_bda) {
 
   return (true);
 }
+
+#endif  /* LEGACY_BT */

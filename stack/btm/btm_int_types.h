@@ -98,7 +98,7 @@ typedef struct {
   2 /* temporarily off for change link key or role switch */
 #define BTM_ACL_ENCRYPT_STATE_ENCRYPT_ON 3 /* encryption turning on */
   uint8_t encrypt_state;                   /* overall BTM encryption state */
-
+#if (LEGACY_BT == FALSE)
   tBT_TRANSPORT transport;
   RawAddress conn_addr;   /* local device address used for this connection */
   uint8_t conn_addr_type; /* local device address type for this connection */
@@ -106,6 +106,8 @@ typedef struct {
   uint8_t active_remote_addr_type; /* local device address type for this
                                       connection */
   BD_FEATURES peer_le_features; /* Peer LE Used features mask for the device */
+
+#endif
 
 } tACL_CONN;
 
@@ -160,6 +162,7 @@ typedef struct {
 
   DEV_CLASS dev_class; /* Local device class                   */
 
+#if (LEGACY_BT == FALSE)
   tBTM_CMPL_CB*
       p_le_test_cmd_cmpl_cb; /* Callback function to be called when
                              LE test mode command has been sent successfully */
@@ -179,7 +182,7 @@ typedef struct {
   bool enable_test_local_sign_cntr;
   uint32_t test_local_sign_cntr;
 #endif
-
+#endif  /* LEGACY_BT */
   tBTM_IO_CAP loc_io_caps;      /* IO capability of the local device */
   tBTM_AUTH_REQ loc_auth_req;   /* the auth_req flag  */
   bool secure_connections_only; /* Rejects service level 0 connections if */
@@ -219,7 +222,9 @@ typedef struct {
                  /* the same device.                                         */
   tBTM_INQ_INFO inq_info;
   bool in_use;
+#if (LEGACY_BT == FALSE)
   bool scan_rsp;
+#endif
 } tINQ_DB_ENT;
 
 enum { INQ_NONE, INQ_LE_OBSERVE, INQ_GENERAL };
@@ -413,6 +418,7 @@ typedef struct {
 #endif
 } tBTM_SEC_SERV_REC;
 
+#if (LEGACY_BT == FALSE)
 /* LE Security information of device in Slave Role */
 typedef struct {
   BT_OCTET16 irk;   /* peer diverified identity root */
@@ -456,9 +462,11 @@ typedef struct {
   uint8_t active_addr_type;
 #endif
 
-  tBTM_LE_KEY_TYPE key_type; /* bit mask of valid key types in record */
-  tBTM_SEC_BLE_KEYS keys;    /* LE device security info in slave rode */
+  tBTM_LE_KEY_TYPE    key_type;       /* bit mask of valid key types in record */
+  tBTM_SEC_BLE_KEYS   keys;           /* LE device security info in slave rode */
 } tBTM_SEC_BLE;
+
+#endif  /* LEGACY_BT */
 
 /* Peering bond type */
 enum { BOND_TYPE_UNKNOWN, BOND_TYPE_PERSISTENT, BOND_TYPE_TEMPORARY };
@@ -568,9 +576,10 @@ typedef struct {
                             /* work, i.e. link keys crosspairing */
                             /* SC BR/EDR->SC LE doesn't happen */
   tBTM_BOND_TYPE bond_type; /* peering bond type */
-
+#if (LEGACY_BT == FALSE)
   tBTM_SEC_BLE ble;
   tBTM_LE_CONN_PRAMS conn_params;
+#endif
 
 #if (BTM_DISC_DURING_RS == TRUE)
 #define BTM_SEC_RS_NOT_PENDING 0 /* Role Switch not in progress */
@@ -767,6 +776,7 @@ typedef struct {
   /*****************************************************
   **      BLE Device controllers
   *****************************************************/
+#if (LEGACY_BT == FALSE)
   tBTM_BLE_CB ble_ctr_cb;
 
   uint16_t enc_handle;
@@ -774,6 +784,7 @@ typedef struct {
   uint16_t ediv;      /* received ediv value from LTK request */
   uint8_t key_size;
   tBTM_BLE_VSC_CB cmn_ble_vsc_cb;
+#endif
 
   /* Packet types supported by the local device */
   uint16_t btm_acl_pkt_types_supported;
